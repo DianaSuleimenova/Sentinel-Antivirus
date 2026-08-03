@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Antivirus — сканер файлов</title>
+<meta name="description" content="Sentinel Antivirus — учебный симулятор антивирусного сканера с эвристическим анализом файлов, историей и статистикой.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/shield.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div class="app">
+
+    <header class="topbar">
+        <div class="brand">
+            <svg class="brand-shield" width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 2L4 5V11C4 16.25 7.41 21.14 12 22C16.59 21.14 20 16.25 20 11V5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M8.5 12L10.8 14.3L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="brand-text">
+                <span class="brand-name">Sentinel</span>
+                <span class="brand-sub">ANTIVIRUS</span>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="status-pill" id="engineStatus">
+                <span class="status-dot"></span>
+                <span>Движок активен</span>
+            </div>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Переключить тему">
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5V5M12 19V21.5M4.2 4.2L6 6M18 18L19.8 19.8M2.5 12H5M19 12H21.5M4.2 19.8L6 18M18 6L19.8 4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="layout">
+
+        <section class="scanner-panel" aria-label="Сканер файлов">
+
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Перетащите файл или нажмите, чтобы выбрать">
+                <input type="file" id="fileInput" multiple hidden>
+
+                <div class="dropzone-inner">
+                    <svg class="dropzone-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 4V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        <path d="M7.5 9L12 4L16.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4 16V17.5C4 18.88 5.12 20 6.5 20H17.5C18.88 20 20 18.88 20 17.5V16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <p class="dropzone-title">Перетащите файл сюда</p>
+                    <p class="dropzone-or">или</p>
+                    <button type="button" class="btn-primary" id="browseBtn">Выбрать файл</button>
+                    <p class="dropzone-hint">Проверка выполняется локально в браузере — файлы никуда не отправляются</p>
+                </div>
+            </div>
+
+            <div class="scan-status" id="scanStatus" hidden>
+                <div class="scan-status-head">
+                    <svg class="scan-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="42 100"/></svg>
+                    <span class="scan-file-name" id="scanFileName">file.exe</span>
+                    <span class="scan-file-size" id="scanFileSize"></span>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-sweep"></div>
+                </div>
+                <div class="progress-meta">
+                    <span id="progressStage">Инициализация…</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+
+                <div class="scan-log" id="scanLog" aria-live="polite"></div>
+            </div>
+
+            <div class="verdict-card" id="verdictCard" hidden>
+                <div class="verdict-icon" id="verdictIcon"></div>
+                <h2 class="verdict-title" id="verdictTitle">Safe</h2>
+                <p class="verdict-file" id="verdictFile">file.jpg</p>
+
+                <div class="risk-bar-row">
+                    <span class="risk-bar-label">Оценка риска</span>
+                    <span class="risk-bar-value" id="riskScoreValue">0/100</span>
+                </div>
+                <div class="risk-bar-track">
+                    <div class="risk-bar-fill" id="riskScoreFill"></div>
+                </div>
+
+                <ul class="verdict-reasons" id="verdictReasons"></ul>
+
+                <div class="verdict-actions">
+                    <button type="button" class="btn-primary" id="scanAnotherBtn">Проверить ещё файл</button>
+                </div>
+            </div>
+
+        </section>
+
+        <aside class="sidebar" aria-label="Статистика и история">
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="statTotal">0</span>
+                    <span class="stat-label">Всего файлов</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="statScanned">0</span>
+                    <span class="stat-label">Проверено</span>
+                </div>
+                <div class="stat-card stat-danger">
+                    <span class="stat-value" id="statDangerous">0</span>
+                    <span class="stat-label">Опасных</span>
+                </div>
+                <div class="stat-card stat-safe">
+                    <span class="stat-value" id="statSafe">0</span>
+                    <span class="stat-label">Безопасных</span>
+                </div>
+            </div>
+
+            <div class="history-panel">
+                <div class="history-header">
+                    <h2>История сканирований</h2>
+                    <button type="button" class="btn-ghost" id="clearHistoryBtn">Очистить</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <p class="history-empty" id="historyEmpty">Пока ничего не проверялось</p>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <footer class="footer">
+        <p>Sentinel Antivirus — учебный симулятор. Вердикт формируется эвристикой (расширение + имя файла) прямо в браузере и не является результатом настоящей проверки на вирусы.</p>
+    </footer>
+
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/scanner.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
